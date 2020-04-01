@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Название</title>
+    <link rel="stylesheet"
+          href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+          crossorigin="anonymous">
+    <style>
+    .headerlink {
+    text-decoration: none;
+    color: black;
+    padding: 10px;
+    }
+    .footerlink {
+    color: red;
+    padding: 20px;
+    }
+    </style>
+</head>
+<body>
+<!-- В заголовке требуются:
+        иконка (✓)
+        рабочие ссылки (домашняя, случайная, о) (✓)
+        найти (~✓, пока ни к чему не подключено)
+-->
+<nav class="navbar navbar-expand-lg" id="top">
+    <a href="/" title="На главную" class="headerlink"><img src="/static/icon.jpg"></a>
+    <a href="/about" class="headerlink">О сайте</a>
+    <a href="/Оксфорд" class="headerlink">Случайная страница</a>
+    <form class="form-inline my-2 my-lg-0 headerlink">
+      <input class="form-control mr-sm-2" type="search" placeholder="Найти">
+    </form>
+</nav>
+
+<main role="main" class="container">
+    {% block content %}{% endblock %}
+
+</main>
+<!-- В подвале -- как минимум кнопка наверх (✓) -->
+<footer>
+    <a href="#top" class="footerlink"><p style="text-align: center;">Наверх</p></a>
+</footer>
+</body>
+</html>
