@@ -23,20 +23,19 @@
 <!-- В заголовке требуются:
         иконка (✓)
         рабочие ссылки (домашняя, случайная, о) (✓)
-        найти (~✓, пока ни к чему не подключено)
+        найти (✓, подключено к нерабочей функции)
 -->
 <nav class="navbar navbar-expand-lg" id="top">
     <a href="/" title="На главную" class="headerlink"><img src="/static/icon.jpg"></a>
     <a href="/about" class="headerlink">О сайте</a>
     <a href="/Оксфорд" class="headerlink">Случайная страница</a>
-    <form class="form-inline my-2 my-lg-0 headerlink">
-      <input class="form-control mr-sm-2" type="search" placeholder="Найти">
+    <form class="form-inline my-2 my-lg-0 headerlink" action="/search">
+      <input class="form-control mr-sm-2" name="find" type="search" placeholder="Найти">
     </form>
 </nav>
 
 <main role="main" class="container">
     {% block content %}{% endblock %}
-
 </main>
 <!-- В подвале -- как минимум кнопка наверх (✓) -->
 <footer>
