@@ -4,6 +4,7 @@ from flask import Flask, render_template, request, redirect
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 import sqlalchemy.ext.declarative as dec
+import base64  # Используется для декодирования байтовых картинок
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'some_secret_key'
@@ -13,7 +14,7 @@ SqlAlchemyBase = dec.declarative_base()
 
 def global_init(db_file):
     conn_str = f'sqlite:///{db_file.strip()}?check_same_thread=False'
-    engine = sa.create_engine(conn_str, echo=True)
+    engine = sa.create_engine(conn_str, echo=False)
     SqlAlchemyBase.metadata.create_all(engine)
     return orm.sessionmaker(bind=engine)
 
@@ -50,12 +51,14 @@ class Photo(SqlAlchemyBase):
     university_id = sa.Column(sa.Integer, sa.ForeignKey("universities.id"))
     preview = sa.Column(sa.Boolean, default=False)
     photo = sa.Column(sa.BLOB)  # Изображение хранится бинарно
+    formatt = sa.Column(sa.String)
     university = orm.relation('University')
 
-    def __init__(self, university, photo, preview=False):
+    def __init__(self, university, photo_path, preview=False):
         global SESSION_MAKER
         self.university_id = university
-        self.photo = photo
+        self.photo = get_image(photo_path)
+        self.formatt = photo_path.split('.')[-1]
         self.preview = preview
         session = SESSION_MAKER()
         session.add(self)
@@ -85,9 +88,7 @@ def get_university_attributes(university: (int, str)):
     # Параметр функции -- название или айди
     session = SESSION_MAKER()
     if type(university) == str:
-        print(university)
         title = session.query(Title).filter(Title.title.ilike(university)).first()
-        print(title)
         if title is not None:
             u = session.query(University).filter(University.id == title.university_id).first()
         else:  # Нет университета с таким названием
@@ -102,28 +103,35 @@ def get_university_attributes(university: (int, str)):
     parameters['university'] = \
         session.query(Title).filter(Title.university_id == u.id, Title.is_main).first().title
     parameters['about'] = u.about if u.about else ''
-    # Это - переделать
-    parameters['photos'] = str(u.photos)
+    # Получение картинок
+    sources = []
+    for photo in u.photos:
+        string = str(base64.b64encode(photo.photo))[2:][:-1]
+        source = f'data:image/{u.formatt};base64,' + string
+        sources.append(source)
+    parameters['photos'] = sources
     parameters['link_to_wikipedia'] = u.link_to_wikipedia if u.link_to_wikipedia else ''
     return parameters
 
 
 # Тестовый университет:
-#
-# u = University('''Древний. Классный. Недалеко. Красивый. С другой стороны постоянный
-# количественный рост и сфера нашей активности обеспечивает широкому кругу (специалистов)
-# участие в формировании модели развития. Не следует, однако забывать, что начало
-# повседневной работы по формированию позиции влечет за собой процесс внедрения и
-# модернизации существенных финансовых и административных условий.''',
-# 'https://ru.wikipedia.org/wiki/%D0%9C%D0%BE%D1%81%D0%BA%D0%BE%D0%B2%D1%81%D0%BA%D0%B8%D0%B9' + \
-# '_%D0%B3%D0%BE%D1%81%D1%83%D0%B4%D0%B0%D1%80%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B9' + \
-# '_%D1%83%D0%BD%D0%B8%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D1%82%D0%B5%D1%82'
-#                )
-# # Нужно сделать кодирование картинок в текст (✓) и обратно
-# Photo(u.id, get_image('static/MSU test.jpg'))
-# Title(u.id, 'МГУ')
-# Title(u.id, 'Московский Государственный Университет', True)
-# get_university_attributes('МГУ')
+
+u = University('''Древний. Классный. Недалеко. Красивый. С другой стороны постоянный
+количественный рост и сфера нашей активности обеспечивает широкому кругу (специалистов)
+участие в формировании модели развития. Не следует, однако забывать, что начало
+повседневной работы по формированию позиции влечет за собой процесс внедрения и
+модернизации существенных финансовых и административных условий.''',
+'https://ru.wikipedia.org/wiki/%D0%9C%D0%BE%D1%81%D0%BA%D0%BE%D0%B2%D1%81%D0%BA%D0%B8%D0%B9' + \
+'_%D0%B3%D0%BE%D1%81%D1%83%D0%B4%D0%B0%D1%80%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B9' + \
+'_%D1%83%D0%BD%D0%B8%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D1%82%D0%B5%D1%82'
+               )
+# Нужно сделать кодирование картинок в текст (✓) и обратно (✓)
+Photo(u.id, 'static/MSU test.jpeg')
+Photo(u.id, 'static/est.png')
+Photo(u.id, 'static/MSU test.jpeg')
+Title(u.id, 'МГУ')
+Title(u.id, 'Московский Государственный Университет', True)
+get_university_attributes('МГУ')
 
 
 @app.route('/')
