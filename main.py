@@ -107,31 +107,31 @@ def get_university_attributes(university: (int, str)):
     sources = []
     for photo in u.photos:
         string = str(base64.b64encode(photo.photo))[2:][:-1]
-        source = f'data:image/{u.formatt};base64,' + string
+        source = f'data:image/{photo.formatt};base64,' + string
         sources.append(source)
     parameters['photos'] = sources
     parameters['link_to_wikipedia'] = u.link_to_wikipedia if u.link_to_wikipedia else ''
     return parameters
 
 
-# Тестовый университет:
-
-u = University('''Древний. Классный. Недалеко. Красивый. С другой стороны постоянный
-количественный рост и сфера нашей активности обеспечивает широкому кругу (специалистов)
-участие в формировании модели развития. Не следует, однако забывать, что начало
-повседневной работы по формированию позиции влечет за собой процесс внедрения и
-модернизации существенных финансовых и административных условий.''',
-'https://ru.wikipedia.org/wiki/%D0%9C%D0%BE%D1%81%D0%BA%D0%BE%D0%B2%D1%81%D0%BA%D0%B8%D0%B9' + \
-'_%D0%B3%D0%BE%D1%81%D1%83%D0%B4%D0%B0%D1%80%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B9' + \
-'_%D1%83%D0%BD%D0%B8%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D1%82%D0%B5%D1%82'
-               )
-# Нужно сделать кодирование картинок в текст (✓) и обратно (✓)
-Photo(u.id, 'static/MSU test.jpeg')
-Photo(u.id, 'static/est.png')
-Photo(u.id, 'static/MSU test.jpeg')
-Title(u.id, 'МГУ')
-Title(u.id, 'Московский Государственный Университет', True)
-get_university_attributes('МГУ')
+# # Тестовый университет:
+#
+# u = University('''Древний. Классный. Недалеко. Красивый. С другой стороны постоянный
+# количественный рост и сфера нашей активности обеспечивает широкому кругу (специалистов)
+# участие в формировании модели развития. Не следует, однако забывать, что начало
+# повседневной работы по формированию позиции влечет за собой процесс внедрения и
+# модернизации существенных финансовых и административных условий.''',
+# 'https://ru.wikipedia.org/wiki/%D0%9C%D0%BE%D1%81%D0%BA%D0%BE%D0%B2%D1%81%D0%BA%D0%B8%D0%B9' + \
+# '_%D0%B3%D0%BE%D1%81%D1%83%D0%B4%D0%B0%D1%80%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B9' + \
+# '_%D1%83%D0%BD%D0%B8%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D1%82%D0%B5%D1%82'
+#                )
+# # Нужно сделать кодирование картинок в текст (✓) и обратно (✓)
+# Photo(u.id, 'static/MSU test.jpeg')
+# Photo(u.id, 'static/est.png')
+# Photo(u.id, 'static/MSU test.jpeg')
+# Title(u.id, 'МГУ')
+# Title(u.id, 'Московский Государственный Университет', True)
+# get_university_attributes('МГУ')
 
 
 @app.route('/')
