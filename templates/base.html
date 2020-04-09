@@ -20,7 +20,7 @@
         }
         .footerlink {
         color: red;
-        padding: 20px;
+        margin: auto;
         }
         .head-carousel-indicators li {
         height: 20px !important;
@@ -29,12 +29,9 @@
         }
     </style>
 </head>
+
 <body>
-<!-- В заголовке требуются:
-        иконка (✓)
-        рабочие ссылки (домашняя, случайная (✓), о) (✓)
-        найти (✓, подключено ✓)
--->
+
 <nav class="navbar navbar-expand-lg" style="background-color: #B3DEFF;" id="top">
     <a href="/" title="На главную" class="headerlink"><img src="/static/icon.jpg"></a>
     <a href="/about" class="headerlink">О сайте</a>
@@ -62,12 +59,14 @@
         </div>
     </div>
 </div>
+<br>
 
 <main role="main" class="container">
     {% block content %}{% endblock %}
 </main>
-<!-- В подвале -- как минимум кнопка наверх (✓) -->
-<footer>
+<br>
+
+<footer style="background-color: #D3DADF; padding-bottom: 4px; padding-top: 15px;">
     <a href="#top" class="footerlink"><p style="text-align: center;">Наверх</p></a>
 </footer>
 </body>

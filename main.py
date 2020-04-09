@@ -1,6 +1,6 @@
 # Разработчик  — Карина Корабельщикова.
 # Сайт для любителей архитектуры. Возможность посмотреть на здания университетов со всего мира.
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, url_for, abort
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 import sqlalchemy.ext.declarative as dec
@@ -81,12 +81,14 @@ class Title(SqlAlchemyBase):
     university_id = sa.Column(sa.Integer, sa.ForeignKey("universities.id"))
     is_main = sa.Column(sa.Boolean, default=False)
     title = sa.Column(sa.String)
+    title_lower = sa.Column(sa.String)
     university = orm.relation('University')
 
     def __init__(self, university, title, is_main=False):
         global SESSION_MAKER
         self.university_id = university
         self.title = title
+        self.title_lower = title.lower()
         self.is_main = is_main
         session = SESSION_MAKER()
         session.add(self)
@@ -101,7 +103,8 @@ def get_university_attributes(university: (int, str)):
             u = session.query(University).order_by(sa.sql.functions.random()).first()
         else:
             #  Ищем университет по названию, регистр игнорируется
-            title = session.query(Title).filter(Title.title.ilike(university)).first()
+            university = university.lower()
+            title = session.query(Title).filter(Title.title_lower == university).first()
             if title is not None:
                 u = session.query(University).filter(University.id == title.university_id).first()
             else:  # Нет университета с таким названием
@@ -126,9 +129,9 @@ def get_university_attributes(university: (int, str)):
     return parameters
 
 
-# Тестовый беспредел:
+#Тестовый беспредел:
 
-# u = University('''Основан 1917 года. Один из старейших и крупнейших классических университетов
+# u = University('''Основан в 1917 году. Один из старейших и крупнейших классических университетов
 # России, один из центров отечественной науки и культуры. Расположен в Москве. C 1940 года носит
 # имя Михаила Васильевича Ломоносова. Полное название — Федеральное государственное бюджетное
 # образовательное учреждение высшего образования «Московский государственный университет имени
@@ -143,9 +146,20 @@ def get_university_attributes(university: (int, str)):
 # for i in range(1, 10):
 #     Photo(u.id, f'static/{i}.jpg', True)
 # Title(u.id, 'МГУ')
+# Title(u.id, 'MSU')
 # Title(u.id, 'Московский государственный университет имени М. В. Ломоносова', True)
 # Title(u.id, 'Московский государственный университет им. М. В. Ломоносова')
 # Title(u.id, 'Московский Государственный Университет')
+#
+# u = University('''Британский университет. Расположен в городе Оксфорд, Англия. Один из старейших университетов в мире (основан раньше 1096 года, точная дата неизвестна). Имеет множество колледжей.''',
+# 'https://ru.wikipedia.org/wiki/Оксфордский_университет'
+#                )
+# Photo(u.id, 'static/O.png')
+# for i in 'цукенгш':
+#     Photo(u.id, f'static/{i}.jpg', True)
+# Title(u.id, 'Oxford')
+# Title(u.id, 'Оксфорд')
+# Title(u.id, 'Оксфордский университет', True)
 
 
 def navbar_with_background(func):
@@ -186,34 +200,52 @@ def about():
     return render_template('aboutpage.html')
 
 
-#  Имеет смысл добавить страницу-обработчик ошибок
+@app.errorhandler(Exception)
+def error_redirect(error):
+    # Я использую допольнительный узел при обработке ошибок, чтобы избежать рекурсии.
+    return redirect(url_for('error_page', error=error))
+
+
+@app.route('/error/<error>')
+@navbar_with_background
+def error_page(error):
+    words = error.split()
+    parameters = {
+        'error_n': words[0],
+        'description': ' '.join(words[1:])
+    }
+    return render_template('errorpage.html', **parameters)
 
 
 @app.route('/search')
 @navbar_with_background
 def find_university_page():
     search = request.args.get('find')
-    if not search:  # значение пустое
-        # остаться где были и ничего не делать
-        return '<script>document.location.href = document.referrer</script>'
     parameters = get_university_attributes(search)
-    if parameters is None:  # Нет в бд
+    if parameters is None:  # Нет в бд или пустое
+        # Если имеет место рекурсивное перенаправление или возвращаться некуда — 404
+        if request.url == request.referrer or request.referrer is None:
+            abort(404)
+        # В другом случае -- запрос игнорируется, страница перезагружается
         return '<script>document.location.href = document.referrer</script>'
     return render_template('universitypage.html', **parameters)
 
 
-@app.route('/<university>')
+@app.route('/<string:university>')
 @navbar_with_background
 def university_page(university):
     parameters = get_university_attributes(university)
-    if not parameters:
-        # В бд нет такого университета
+    if not parameters:  # В бд нет такого университета
+        # Если имеет место рекурсивное перенаправление или возвращаться некуда — 404
+        if request.url == request.referrer or request.referrer is None:
+            abort(404)
+        # В другом случае -- запрос игнорируется, страница перезагружается
         return '<script>document.location.href = document.referrer</script>'
     return render_template('universitypage.html', **parameters)
 
 
 if __name__ == '__main__':
-    app.run(port=8080, host='127.0.0.1')  # Изменить перед сдачей
+    app.run(port=8080, host='127.0.0.1', debug=True)  # Изменить перед сдачей
 
 
 #  Придумать название для сайта!
