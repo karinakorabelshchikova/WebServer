@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Университеты</h1>
+<br>
+{% set letter = {'letter': 'А'} %}
+{% for u in universities %}
+    {% if u[0] != letter['letter'] %}
+        {% set _ = letter.update({'letter': u[0]}) %}
+        <h2>{{letter['letter']}}</h2>
+    {% endif %}
+    <h3><a href="/{{u}}">{{u}}</a></h3>
+{% endfor %}
+{% endblock %}

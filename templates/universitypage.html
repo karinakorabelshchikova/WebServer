@@ -38,7 +38,9 @@
     <span class="sr-only">Next</span>
   </a>
 </div>
+{% if link_to_wikipedia %}
 <br>
-<h2>Ссылка:</h2>
+<h2>Статья на Википедии:</h2>
 <a href={{link_to_wikipedia}} target="_blank">wikipedia↗</a>
+{% endif %}
 {% endblock %}

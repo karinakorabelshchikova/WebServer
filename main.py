@@ -160,6 +160,22 @@ def get_university_attributes(university: (int, str)):
 # Title(u.id, 'Oxford')
 # Title(u.id, 'Оксфорд')
 # Title(u.id, 'Оксфордский университет', True)
+#
+# u = University('''Расположенный в Кембридже (пригород Бостона), США. Одно из самых престижных технических учебных
+# заведений США и мира.
+# МТИ занимает лидирующие позиции в престижных рейтингах университетов мира, является новатором в областях
+# робототехники и искусственного интеллекта. Институт также известен во многих других областях, включая менеджмент,
+# экономику, лингвистику, политические науки, философию и музыку.''',
+#                'https://ru.wikipedia.org/wiki/Массачусетский_технологический_институт'
+#                )
+# for i in 'zxcvbnmas':
+#     Photo(u.id, f'static/{i}.jpg', True)
+# Title(u.id, 'MIT')
+# Title(u.id, 'Массачусетский институт технологий')
+# Title(u.id, 'Массачусетский технологический университет')
+# Title(u.id, 'Massachusetts Institute of Technology')
+# Title(u.id, 'МТИ')
+# Title(u.id, 'Массачусетский технологический институт', True)
 
 
 def navbar_with_background(func):
@@ -198,6 +214,17 @@ def home():
 @navbar_with_background
 def about():
     return render_template('aboutpage.html')
+
+
+@app.route('/all')
+@navbar_with_background
+def all_universities_page():
+    # Алфавитный список ссылок на статьи
+    session = SESSION_MAKER()
+    titles = map(lambda params: params[0],
+                 session.query(Title).filter(Title.is_main).order_by(Title.title).values(Title.title)
+                 )
+    return render_template('allpage.html', universities=titles)
 
 
 @app.errorhandler(Exception)
